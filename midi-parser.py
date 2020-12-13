@@ -7,8 +7,8 @@ class MoveOutOfBounds(GCodeMachineException):
     def __init__(self, pos, dim):
         self.pos = pos
         self.dim = dim
-        self.message = f"Machine out of bounds! Wanted to move to {pos}, but max x/y is {dim}"
-        super().__init__(message=self.message)
+        self.message = f"Machine out of bounds! Wanted to move to {pos}, but dimensions is {dim}"
+        super().__init__(self.message)
 
 HZ2FR = 3.033
 
@@ -64,31 +64,36 @@ class GCodeMachine:
         if self.position[0] > self.dimensions[0] / 2:
             dx *= -1
 
-        if self.position[0] > self.dimensions[1] / 2:
+        if self.position[1] > self.dimensions[1] / 2:
             dy *= -1
 
         try:
             self.move_to(fr, self.position[0] + dx, self.position[1] + dy)
         except MoveOutOfBounds as e:
-            self.tone(fq1, fq2, t / 2)
-            self.tone(fq1, fq2, t / 2)
+            if t < 0.01:
+                print("At", self.position, "dxdy=", dx, dy)
+                print(e)
+                exit()
+            else:
+                self.tone(fq1, fq2, t / 2)
+                self.tone(fq1, fq2, t / 2)
+
+tones = [
+    220, 220 * 9/8, 220 * 5/4, 220*4/3, 220*3/2, 220*5/3, 220*15/8,
+    440, 440 * 9/8, 440 * 5/4, 440*4/3, 440*3/2, 440*5/3, 440*15/8,
+    440 * 2,
+]
 
 melody = [
-    (440, 0, 0.25),
-    (440 * 9/8, 0, 0.25),
-    (440 * 6/5, 0, 0.25),
-    (440 * 4/3, 0, 0.25),
-    (440 * 9/8, 0, 0.25),
-    (0, 0, 0.25),
-    (440 / (9/8), 0, 0.25),
-    (440, 0, 0.25),
+    (tones[i], tones[i+2], 0.5)
+    for i in range(len(tones)-2)
 ]
 
 machine = GCodeMachine(375, 315)
 machine.setup()
 
 for fq1, fq2, t in melody:
-    machine.tone(fq1, fq2, t)
+    machine.tone(fq1/2, fq2/2, t)
 
 machine.finalize()
 
