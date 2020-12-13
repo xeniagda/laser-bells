@@ -81,15 +81,26 @@ class GCodeMachine:
                 self.tone(fq1, fq2, t / 2)
                 self.tone(fq1, fq2, t / 2)
 
-parsed = midi_parser.read_midi("MIDI-Samples/Jingle_Bells.mid")
-print(parsed)
+voice_1 = midi_parser.read_midi("MIDI-Samples/Jingle_Bells.mid", 0, 0)
+voice_2 = midi_parser.read_midi("MIDI-Samples/Jingle_Bells.mid", 1, 0)
 
-last_t = 0
 melody = []
-for i in range(len(parsed) - 1):
-    melody.append((parsed[i][1], 0, parsed[i+1][0] - parsed[i][0]))
 
-print(melody)
+i, j = 0, 0
+t = 0
+while i < len(voice_1) - 1 and j < len(voice_2) - 1:
+    if voice_1[i+1][0] - t < voice_2[j+1][0] - t:
+        melody.append((voice_1[i][1], voice_2[j][1], voice_1[i + 1][0] - t))
+        t = voice_1[i + 1][0]
+        i += 1
+    else:
+        melody.append((voice_1[i][1], voice_2[j][1], voice_2[j + 1][0] - t))
+        t = voice_2[j + 1][0]
+        j += 1
+
+
+
+# print(len(melody))
 
 machine = GCodeMachine(375, 315)
 machine.setup()

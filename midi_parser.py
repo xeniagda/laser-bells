@@ -12,7 +12,6 @@ def track_to_timestamps(track, channel, time_scale):
     for msg in track:
         if msg.type == "note_on" and msg.channel == channel:
             t += msg.time
-            print(msg)
 
             if msg.velocity > ON_THRESHOLD:
                 freq = midi_note_to_freq(msg.note)
@@ -23,13 +22,13 @@ def track_to_timestamps(track, channel, time_scale):
 
     return out
 
-def read_midi(file_to_parse):
+def read_midi(file_to_parse, track, channel):
 
     file_to_parse = "MIDI-Samples/Jingle_Bells.mid"
 
     mid = mido.MidiFile(file_to_parse)
 
-    track = mid.tracks[0]
+    track = mid.tracks[track]
 
 
-    return track_to_timestamps(track, 0, 1 / mid.ticks_per_beat)
+    return track_to_timestamps(track, channel, 1 / mid.ticks_per_beat)
