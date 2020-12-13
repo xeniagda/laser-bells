@@ -1,4 +1,5 @@
-import mido
+import midi_parser
+import random
 
 class GCodeMachineException(Exception):
     pass
@@ -60,6 +61,8 @@ class GCodeMachine:
             return
 
         fr, dx, dy = tone_to_g1(fq1, fq2, t)
+        if random.random() < 0.5:
+            dx, dy = dy, dx
 
         if self.position[0] > self.dimensions[0] / 2:
             dx *= -1
@@ -78,22 +81,21 @@ class GCodeMachine:
                 self.tone(fq1, fq2, t / 2)
                 self.tone(fq1, fq2, t / 2)
 
-tones = [
-    220, 220 * 9/8, 220 * 5/4, 220*4/3, 220*3/2, 220*5/3, 220*15/8,
-    440, 440 * 9/8, 440 * 5/4, 440*4/3, 440*3/2, 440*5/3, 440*15/8,
-    440 * 2,
-]
+parsed = midi_parser.read_midi("MIDI-Samples/Jingle_Bells.mid")
+print(parsed)
 
-melody = [
-    (tones[i], tones[i+2], 0.5)
-    for i in range(len(tones)-2)
-]
+last_t = 0
+melody = []
+for i in range(len(parsed) - 1):
+    melody.append((parsed[i][1], 0, parsed[i+1][0] - parsed[i][0]))
+
+print(melody)
 
 machine = GCodeMachine(375, 315)
 machine.setup()
 
 for fq1, fq2, t in melody:
-    machine.tone(fq1/2, fq2/2, t)
+    machine.tone(fq1, fq2, t)
 
 machine.finalize()
 
