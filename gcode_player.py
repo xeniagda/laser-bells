@@ -89,16 +89,18 @@ class GCodeMachine:
                 self.tone(fq1, fq2, t / 2)
 
 
-SONG = "MIDI-Samples/deckthe.mid"
+SONG = "MIDI-Samples/electric.mid"
 TS = 4
 
-voice_1 = midi_parser.read_midi(SONG, 0, 0, use_min=False, ts=TS)
+voice_1 = [(0, 0)] # midi_parser.read_midi(SONG, 0, 0, use_min=False, ts=TS)
 voice_2 = midi_parser.read_midi(SONG, 1, 0, use_min=True, ts=TS)
-
 last_time = max(voice_1[-1][0], voice_2[-1][0])
 
+voice_1.insert(0, (0, 0))
+voice_2.insert(0, (0, 0))
 voice_1.append((last_time + 1, 0))
 voice_2.append((last_time + 1, 0))
+
 
 melody = []
 
